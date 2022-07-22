@@ -1,14 +1,16 @@
-import React from "react";
-import { Alert } from 'react-native'
-import { useAuth } from "../../hooks/auth";
-
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, Platform } from 'react-native'
 import { RFValue } from "react-native-responsive-fontsize";
 
-import { SignInSocialButton } from "../../components/SignInSocialButton";
+import { useTheme } from 'styled-components'
 
 import LogoSvg from "../../assets/logo.svg";
 import AppleSvg from "../../assets/apple.svg";
 import GoogleSvg from "../../assets/google.svg";
+
+import { useAuth } from "../../hooks/auth";
+
+import { SignInSocialButton } from "../../components/SignInSocialButton";
 
 import {
   Container,
@@ -21,23 +23,30 @@ import {
 } from "./styles";
 
 export function SignIn() {
-  const { user, signInWithGoogle, signInWithApple } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { signInWithGoogle, signInWithApple } = useAuth();
+  const theme = useTheme();
 
   async function handleSignInWithGoogle() {
     try {
+      setIsLoading(true);
       await signInWithGoogle();
     } catch (error) {
       console.error(error);
       Alert.alert('Não foi posível conectar a conta Google');
+      setIsLoading(false);
     }
   }
 
   async function handleSignInWithApple() {
     try {
+      setIsLoading(true);
       await signInWithApple();
     } catch (error) {
       console.error(error);
       Alert.alert('Não foi posível conectar a conta Apple');
+      setIsLoading(false);
     }
   }
 
@@ -64,12 +73,20 @@ export function SignIn() {
             title="Entrar com Google" 
             onPress={handleSignInWithGoogle}
           />
-          <SignInSocialButton 
-            svg={AppleSvg} 
-            title="Entrar com Apple" 
-            onPress={handleSignInWithApple}
-          />
+          { Platform.OS === 'ios' &&
+            <SignInSocialButton 
+              svg={AppleSvg} 
+              title="Entrar com Apple" 
+              onPress={handleSignInWithApple}
+            />
+          }
         </FooterWrapper>
+        { isLoading && 
+          <ActivityIndicator 
+            color={theme.colors.shape} 
+            style={{ marginTop: 18 }}
+          /> 
+        }
       </Footer>
     </Container>
   );
